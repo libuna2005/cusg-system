@@ -21,7 +21,7 @@ try {
 // Get your API key from https://app.brevo.com -> Settings -> SMTP & API -> API Keys
 // BREVO_SENDER_EMAIL must be a verified sender in Brevo (Settings -> Senders).
 if (!defined('BREVO_API_KEY')) {
-    define('BREVO_API_KEY', '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');
+    define('BREVO_API_KEY', '        ');
 }
 if (!defined('BREVO_SENDER_EMAIL')) {
     define('BREVO_SENDER_EMAIL', 'cusgalijis@gmail.com');
