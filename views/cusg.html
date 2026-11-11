@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="../assets/js/api-guard.js?v=43"></script>
+    <title>CUSG Alijis - QR Event Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="../assets/cusg_logo.jpg" type="image/png">
+    <style>
+        body {
+            background-image: url('../assets/bg.jpg');
+            background-repeat: no-repeat; background-attachment: fixed; background-size: cover; min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+        .input-error { border: 2px solid #ef4444 !important; background-color: #fff1f1 !important; }
+        body.modal-open { overflow: hidden; }
+
+        /* ── CHMSU-style diagonal banner ── */
+        .chmsu-banner {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            height: 90px;
+            background: #1a3a8f; /* navy base */
+            border-radius: 12px 12px 0 0;
+        }
+        .chmsu-banner .band {
+            position: absolute;
+            top: 0;
+            height: 100%;
+        }
+        /* Navy left */
+        .chmsu-banner .band-navy {
+            left: 0;
+            width: 55%;
+            background: #1a3a8f;
+            clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+        }
+        /* Green middle */
+        .chmsu-banner .band-green {
+            left: 38%;
+            width: 38%;
+            background: #16a34a;
+            clip-path: polygon(15% 0, 100% 0, 85% 100%, 0% 100%);
+        }
+        /* Orange right */
+        .chmsu-banner .band-orange {
+            right: 0;
+            width: 30%;
+            background: #f97316;
+            clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
+        }
+        .chmsu-banner .banner-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 14px;
+            z-index: 10;
+        }
+        .chmsu-banner .banner-logo {
+            width: 62px;
+            height: 62px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+            flex-shrink: 0;
+        }
+        .chmsu-banner .banner-text {
+            color: #fff;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+        }
+        .chmsu-banner .banner-text h2 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            line-height: 1.2;
+        }
+        .chmsu-banner .banner-text p {
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        /* iOS Download Overlay */
+        #iosDownloadOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(6px);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #iosDownloadOverlay.active { display: flex; }
+        #iosScrollArea {
+            max-height: 75vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+            max-width: 360px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #iosDownloadOverlay img {
+            width: 100%;
+            max-width: 360px;
+            border-radius: 12px;
+            border: 2px solid #fff;
+        }
+        #iosDownloadOverlay .ios-tip {
+            margin-top: 16px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: #fff;
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: center;
+            max-width: 360px;
+            width: 100%;
+        }
+        #iosDownloadOverlay .ios-tip strong { color: #86efac; }
+        #iosCloseBtn {
+            margin-top: 16px;
+            background: #008102;
+            color: #fff;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            padding: 14px 40px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+<!-- Toast -->
+<div id="toastWrapper" class="fixed top-5 left-1/2 -translate-x-1/2 z-[1000] hidden">
+    <div class="bg-green-600 text-white px-8 py-4 rounded-2xl shadow-2xl font-bold">QR ID Generated Successfully!</div>
+</div>
+
+<!-- iOS Save Overlay -->
+<div id="iosDownloadOverlay">
+    <div id="iosScrollArea">
+        <img id="iosPreviewImg" src="" alt="QR ID Preview">
+        <div class="ios-tip">
+            <strong>📱 iPhone / iPad:</strong><br>
+            Long-press the image above, then tap <strong>"Save to Photos"</strong> or <strong>"Add to Photos"</strong>.
+        </div>
+        <button id="iosCloseBtn" onclick="closeIosOverlay()">Done</button>
+    </div>
+</div>
+
+<div class="container mx-auto flex flex-col items-center justify-center p-4 md:p-6">
+    <div class="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl w-full max-w-2xl mb-8 border-t-0 overflow-hidden">
+
+        <!-- ── CHMSU-style Diagonal Banner Header ── -->
+        <div class="chmsu-banner">
+            <div class="band band-navy"></div>
+            <div class="band band-green"></div>
+            <div class="band band-orange"></div>
+            <div class="banner-content">
+                <img class="banner-logo" src="https://kvzpwanlfzqriqphfsue.supabase.co/storage/v1/object/public/assets/CUSG_LOGO.png" alt="CUSG Logo" onerror="this.style.display='none'">
+                <div class="banner-text">
+                    <h2>CUSG – ALIJIS CAMPUS</h2>
+                    <p>Carlos Hilado Memorial State University</p>
+                    <p style="font-size:0.6rem; opacity:0.75; letter-spacing:0.18em;">QR EVENT ID GENERATOR</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Body -->
+        <div class="p-6 md:p-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" id="studentIdInput" placeholder="Student ID" class="next-input w-full px-4 py-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="lastNameInput" placeholder="Last Name" class="next-input w-full px-4 py-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="firstNameInput" placeholder="First Name" class="next-input w-full px-4 py-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="middleNameInput" placeholder="Middle Name (Optional)" class="next-input w-full px-4 py-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+
+                <select id="courseInput" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    <option value="" disabled selected>Select Course</option>
+                    <optgroup label="College of Computer Studies (CCS)">
+                        <option value="BSIT">BS in Information Technology</option>
+                        <option value="BSIS">BS in Information Systems</option>
+                    </optgroup>
+                    <optgroup label="College of Engineering (COE)">
+                        <option value="BS CPE">BS in Computer Engineering</option>
+                        <option value="BS ECE">BS in Electronics Engineering</option>
+                    </optgroup>
+                    <optgroup label="College of Industrial Technology (CIT)">
+                        <option value="BIT Architectural Drafting Technology">Architectural Drafting Tech</option>
+                        <option value="BIT Culinary Technology">Culinary Technology</option>
+                        <option value="BIT Computer Technology">Computer Technology</option>
+                        <option value="BIT Electronic Technology">Electronic Technology</option>
+                        <option value="BIT Electrical Technology">Electrical Technology</option>
+                        <option value="BIT Automotive Technology">Automotive Technology</option>
+                        <option value="BIT Mechanical Technology">Mechanical Technology</option>
+                    </optgroup>
+                    <optgroup label="College of Education (COED)">
+                        <option value="BTVTED Major in Electrical">BTVTEd Major in Electrical</option>
+                        <option value="BTVTED Major in Electronics">BTVTEd Major in Electronics</option>
+                    </optgroup>
+                </select>
+
+                <select id="yearInput" class="next-input w-full px-4 py-3 border border-gray-300 rounded-lg bg-white">
+                    <option value="" disabled selected>Select Year</option>
+                    <option value="1">1st Year</option><option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option><option value="4">4th Year</option>
+                </select>
+
+                <select id="sectionInput" class="next-input w-full px-4 py-3 border border-gray-300 rounded-lg bg-white">
+                    <option value="" disabled selected>Select Section</option>
+                </select>
+
+                <div class="md:col-span-2 mt-2">
+                    <label class="block text-gray-700 font-semibold mb-1">Upload Student Photo</label>
+                    <input type="file" id="faceImageInput" accept="image/*" class="next-input w-full px-4 py-2 border border-gray-300 rounded-lg bg-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <div id="savedPhotoHint" class="hidden mt-2 flex items-center gap-2 text-sm text-gray-600">
+                        <img id="savedPhotoThumb" src="" alt="Saved photo" class="w-10 h-10 rounded-full object-cover border border-gray-300">
+                        <span>Using your saved photo — choose a new file above only if you want to replace it.</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 flex flex-col gap-3">
+                <button id="generateQrButton" class="w-full px-6 py-4 bg-blue-600 text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 transition active:scale-95 disabled:opacity-50">
+                    Generate QR ID
+                </button>
+                <button id="returnToDashboardButton" class="w-full px-6 py-4 bg-gray-200 text-gray-800 font-bold rounded-lg shadow-sm hover:bg-gray-300 transition active:scale-95">
+                    Return to Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="successModal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[380px] max-h-[95vh] flex flex-col overflow-hidden">
+        
+        <div class="flex justify-between items-center p-4 border-b">
+            <h3 class="font-bold text-green-600">ID PREVIEW</h3>
+            <button onclick="closeModal()" class="text-gray-400 text-3xl px-2">&times;</button>
+        </div>
+        
+        <div class="overflow-y-auto p-4 flex-grow bg-gray-100">
+            <div id="modalCanvasContainer" class="w-full shadow-2xl border border-gray-200 rounded-lg overflow-hidden bg-white"></div>
+            <p id="iphoneHint" class="text-[11px] text-gray-500 mt-4 text-center leading-tight hidden">
+                <strong>iPhone Users:</strong> Tap <strong>Download / Save</strong> below. If it opens a new tab, long-press the image and choose <em>"Save to Photos"</em>.
+            </p>
+        </div>
+
+        <div class="p-4 bg-white border-t grid grid-cols-2 gap-3">
+            <button onclick="closeModal()" class="py-4 bg-gray-100 text-gray-600 font-bold rounded-xl">Back</button>
+            <button id="downloadBtn" class="py-4 bg-blue-600 text-white text-center font-bold rounded-xl shadow-md">
+                Download
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="../assets/js/qr-card.js"></script>
+<script>
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) { document.getElementById('iphoneHint').classList.remove('hidden'); }
+
+    const currentUser = (() => {
+        try { return JSON.parse(localStorage.getItem('cusg_current_user') || 'null'); } catch (_) { return null; }
+    })();
+
+    const inputs = document.querySelectorAll('.next-input');
+    inputs.forEach((input, i) => {
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); if (inputs[i+1]) inputs[i+1].focus(); else document.getElementById('generateQrButton').click(); } });
+        input.addEventListener('input', () => input.classList.remove('input-error'));
+    });
+
+    // Fill the Section dropdown with A through G (a section the student already has beyond G is kept).
+    const SECTION_COUNT = 7;
+    const sectionSelectEl = document.getElementById('sectionInput');
+    if (sectionSelectEl) {
+        for (let i = 0; i < SECTION_COUNT; i++) {
+            const letter = String.fromCharCode(65 + i); // 'A' .. 'G'
+            const opt = document.createElement('option');
+            opt.value = letter;
+            opt.textContent = `Section ${letter}`;
+            sectionSelectEl.appendChild(opt);
+        }
+    }
+
+    // ── Prefill from registration data, so the student isn't retyping
+    //    everything they already gave us at sign-up. They can still edit
+    //    any field before generating, and only need to touch the photo
+    //    upload if they want to replace their saved picture. ──
+    if (currentUser) {
+        const idEl = document.getElementById('studentIdInput');
+        if (idEl && currentUser.student_id) {
+            idEl.value = currentUser.student_id;
+            idEl.readOnly = true;
+            idEl.classList.add('bg-gray-100');
+        }
+
+        // Prefer the separate name columns (reliable, no guessing). Only fall
+        // back to parsing full_name for older accounts registered before
+        // last/first/middle name were split out into their own fields.
+        let last = currentUser.last_name || '';
+        let first = currentUser.first_name || '';
+        let middle = currentUser.middle_name || '';
+
+        if (!last && !first && currentUser.full_name) {
+            const raw = currentUser.full_name.trim();
+            if (raw.includes(',')) {
+                const [lastPart, restPart] = raw.split(',').map(s => s.trim());
+                last = lastPart || '';
+                const restWords = (restPart || '').split(/\s+/).filter(Boolean);
+                first = restWords.shift() || '';
+                middle = restWords.join(' ');
+            } else {
+                const words = raw.split(/\s+/).filter(Boolean);
+                last = words.pop() || '';
+                first = words.shift() || '';
+                middle = words.join(' ');
+            }
+        }
+
+        const lastEl = document.getElementById('lastNameInput');
+        const firstEl = document.getElementById('firstNameInput');
+        const middleEl = document.getElementById('middleNameInput');
+        if (lastEl) lastEl.value = last;
+        if (firstEl) firstEl.value = first;
+        if (middleEl) middleEl.value = middle;
+
+        const courseEl = document.getElementById('courseInput');
+        if (courseEl && currentUser.course_program) {
+            const opt = [...courseEl.options].find(o => o.value === currentUser.course_program);
+            if (opt) courseEl.value = currentUser.course_program;
+        }
+
+        // yearInput uses "1".."4"; registration stores "1st Year" etc. — map between them.
+        const yearEl = document.getElementById('yearInput');
+        if (yearEl && currentUser.year_level) {
+            const numericYear = (currentUser.year_level.match(/\d/) || [])[0];
+            if (numericYear) yearEl.value = numericYear;
+        }
+
+        if (sectionSelectEl && currentUser.section) {
+            if (![...sectionSelectEl.options].some(o => o.value === currentUser.section)) {
+                const keep = document.createElement('option');
+                keep.value = currentUser.section; keep.textContent = `Section ${currentUser.section}`;
+                sectionSelectEl.appendChild(keep);
+            }
+            sectionSelectEl.value = currentUser.section;
+        }
+
+        if (currentUser.profile_picture_url) {
+            const hint = document.getElementById('savedPhotoHint');
+            const thumb = document.getElementById('savedPhotoThumb');
+            if (hint && thumb) {
+                thumb.src = currentUser.profile_picture_url;
+                hint.classList.remove('hidden');
+            }
+        }
+    }
+
+    // Force uppercase as-you-type on free-text fields, for uniform data/QR encoding.
+    ['studentIdInput', 'lastNameInput', 'firstNameInput', 'middleNameInput'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.textTransform = 'uppercase';
+        el.addEventListener('input', () => {
+            const pos = el.selectionStart;
+            el.value = el.value.toUpperCase();
+            el.setSelectionRange(pos, pos);
+        });
+    });
+
+    function closeModal() { document.getElementById('successModal').classList.add('hidden'); document.body.classList.remove('modal-open'); }
+    function closeIosOverlay() { document.getElementById('iosDownloadOverlay').classList.remove('active'); document.body.classList.remove('modal-open'); }
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+        const dataUrl = document.getElementById('downloadBtn').dataset.dataUrl;
+        const fileName = document.getElementById('downloadBtn').dataset.fileName || 'Student_QR_ID.png';
+        if (!dataUrl) return;
+        if (isIOS) {
+            closeModal();
+            document.getElementById('iosPreviewImg').src = dataUrl;
+            document.getElementById('iosDownloadOverlay').classList.add('active');
+            document.body.classList.add('modal-open');
+        } else {
+            const a = document.createElement('a');
+            a.href = dataUrl; a.download = fileName;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            closeModal();
+            document.getElementById('toastWrapper').classList.remove('hidden');
+            setTimeout(() => document.getElementById('toastWrapper').classList.add('hidden'), 3000);
+        }
+    });
+
+    const returnButton = document.getElementById('returnToDashboardButton');
+    if (returnButton) {
+        returnButton.addEventListener('click', () => {
+            window.location.href = 'student.html';
+        });
+    }
+
+    document.getElementById('generateQrButton').addEventListener('click', async () => {
+        const fields = { 
+            id: document.getElementById('studentIdInput'), 
+            last: document.getElementById('lastNameInput'), 
+            first: document.getElementById('firstNameInput'), 
+            middle: document.getElementById('middleNameInput'), 
+            course: document.getElementById('courseInput'), 
+            year: document.getElementById('yearInput'), 
+            sec: document.getElementById('sectionInput'),
+            photo: document.getElementById('faceImageInput') 
+        };
+
+        const required = [fields.id, fields.last, fields.first, fields.course, fields.year, fields.sec];
+        let hasError = false;
+        required.forEach(el => { 
+            if (!el.value) { el.classList.add('input-error'); hasError = true; } 
+            else el.classList.remove('input-error'); 
+        });
+
+        const hasNewPhoto = fields.photo.files && fields.photo.files[0];
+        const hasSavedPhoto = currentUser && currentUser.profile_picture_url;
+        if (!hasNewPhoto && !hasSavedPhoto) {
+            fields.photo.classList.add('input-error');
+            hasError = true;
+        } else {
+            fields.photo.classList.remove('input-error');
+        }
+        if (hasError) return;
+
+        const genBtn = document.getElementById('generateQrButton');
+        genBtn.disabled = true; genBtn.innerText = "Generating ID...";
+
+        try {
+            // Photo: the newly chosen file, or the one already saved on the account.
+            const photoUrl = hasNewPhoto ? await readFileAsDataUrl(fields.photo.files[0]) : currentUser.profile_picture_url;
+            profileImageDataUrl = photoUrl;
+
+            // The card itself is drawn by the shared module (assets/js/qr-card.js).
+            const mName = fields.middle.value.trim();
+            const canvas = await CusgQrCard.render({
+                id: fields.id.value, last: fields.last.value, first: fields.first.value, middle: mName,
+                course: fields.course.value, year: fields.year.value, section: fields.sec.value, photoUrl
+            });
+
+            const container = document.getElementById('modalCanvasContainer');
+            container.innerHTML = ''; 
+            canvas.style.width = "100%"; canvas.style.height = "auto";
+            container.appendChild(canvas);
+
+            const dBtn = document.getElementById('downloadBtn');
+            const fName = `${fields.last.value}_${fields.first.value}`.toUpperCase().replace(/\s+/g, '_').replace(/[^A-Z0-9_]/g, '');
+            const dataUrl = canvas.toDataURL("image/png", 1.0);
+            dBtn.dataset.fileName = `${fName}.png`;
+            dBtn.dataset.dataUrl = dataUrl;
+
+            fetch('../api/student/qr.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    student_id: fields.id.value.trim(),
+                    qr_code_image: dataUrl
+                })
+            }).then(async response => {
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || !result.success) {
+                    console.warn('QR save failed:', result.message || response.statusText);
+                }
+            }).catch(err => {
+                console.warn('QR save request failed:', err);
+            });
+
+            // Only re-upload the profile photo if the student actually picked a
+            // new one on this page — a real multipart upload to its own endpoint,
+            // same pattern as the settings-page photo change and the excuse-letter
+            // upload, instead of JSON-encoding a base64 blob.
+            if (hasNewPhoto) {
+                const photoForm = new FormData();
+                photoForm.append('student_id', fields.id.value.trim());
+                photoForm.append('profile_picture', fields.photo.files[0]);
+
+                fetch('../api/student/upload_profile_picture.php', {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' },
+                    body: photoForm
+                }).then(async response => {
+                    const result = await response.json().catch(() => ({}));
+                    if (!response.ok || !result.success) {
+                        console.warn('Profile save failed:', result.message || response.statusText);
+                    } else if (currentUser && currentUser.student_id === fields.id.value.trim()) {
+                        currentUser.profile_picture_url = result.path;
+                        localStorage.setItem('cusg_current_user', JSON.stringify(currentUser));
+                    }
+                }).catch(err => {
+                    console.warn('Profile save request failed:', err);
+                });
+            }
+
+            document.getElementById('successModal').classList.remove('hidden');
+            document.body.classList.add('modal-open');
+            genBtn.disabled = false; genBtn.innerText = "Generate QR ID";
+        } catch (err) {
+            console.warn('QR ID generation failed:', err);
+            alert('Sorry, the QR ID could not be generated. Please check your internet connection and try again.');
+            genBtn.disabled = false; genBtn.innerText = "Generate QR ID";
+        }
+    });
+
+    function readFileAsDataUrl(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error('Could not read the photo.'));
+            reader.readAsDataURL(file);
+        });
+    }
+
+    let profileImageDataUrl = null;
+</script>
+</body>
+</html>

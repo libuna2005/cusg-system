@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../assets/js/api-guard.js?v=43"></script>
+    <title>Student Dashboard - CUSG Alijis</title>
+    <!-- FontAwesome for Dashboard Navigation Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="../assets/cusg_logo.jpg" type="image/png">
+    <!-- Link to your External CSS path -->
+    <link rel="stylesheet" href="../assets/css/student/student.css?v=20260805c">
+    <style>
+        /* ── Attendance Grid Styles ── */
+        #attendanceGrid { width: 100%; }
+
+        .attendance-empty {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; padding: 40px 20px; text-align: center;
+        }
+
+        /* Section label */
+        .att-section-label {
+            font-size: 0.78rem; font-weight: 700; color: #475569;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            margin: 18px 0 8px; display: flex; align-items: center; gap: 7px;
+        }
+
+        /* Group ("folder") label above a set of sub-session rows, e.g. "Uweek Day 1" */
+        .att-group-title {
+            font-size: 0.82rem; font-weight: 700; color: #1a3a8f;
+            margin: 14px 0 6px 2px; display: flex; align-items: center; gap: 7px;
+        }
+
+        /* v37: one readable row per event (no sideways scrolling on a phone) */
+        .att-list { border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; margin-bottom:8px; background:#fff; }
+        .att-item { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 14px; border-top:1px solid #f1f5f9; min-height:56px; }
+        .att-item:first-child { border-top:0; }
+        .att-item-main { min-width:0; display:flex; flex-direction:column; gap:2px; }
+        .att-event-label { font-size:0.9rem; font-weight:700; color:#0f172a; overflow-wrap:anywhere; line-height:1.3; }
+        .att-event-date { font-size:0.76rem; color:#64748b; overflow-wrap:anywhere; }
+        .att-pill { display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px; font-size:0.76rem; font-weight:700; border:1px solid; white-space:nowrap; flex-shrink:0; }
+        .att-present  { color:#065f46; background:#ecfdf5; border-color:#a7f3d0; }
+        .att-absent   { color:#991b1b; background:#fef2f2; border-color:#fca5a5; }
+        .att-excused  { color:#1e40af; background:#dbeafe; border-color:#93c5fd; }
+        .att-no-class { color:#475569; background:#e2e8f0; border-color:#cbd5e1; }
+        .att-processing { color:#92400e; background:#fffbeb; border-color:#fcd34d; }
+
+        .att-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+        .att-head h3 { margin:0 0 4px; color:#0f172a; font-size:1.05rem; }
+        .att-updated { color:#64748b; font-size:0.78rem; }
+        .att-refresh { background:#fff; border:1px solid #cbd5e1; color:#334155; border-radius:8px; padding:8px 14px; font-weight:700; font-size:0.85rem; cursor:pointer; min-height:44px; }
+        .att-refresh:hover { background:#f1f5f9; }
+        .att-refresh:disabled { opacity:.6; cursor:wait; }
+        .att-msg.ok { background:#f0fdf4; border-color:#86efac; color:#14532d; }
+        .att-msg { display:none; margin-bottom:12px; padding:10px 14px; border-radius:10px; background:#fef2f2; border:1px solid #fca5a5; color:#7f1d1d; font-size:0.85rem; font-weight:600; }
+        .att-tiles { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:8px; }
+        .att-tile { border:1px solid #e2e8f0; border-radius:12px; padding:12px 14px; background:#f8fafc; }
+        .att-tile-label { display:flex; align-items:center; gap:6px; font-size:0.74rem; font-weight:700; color:#475569; }
+        .att-tile-value { font-size:1.7rem; font-weight:800; color:#0f172a; line-height:1.2; margin-top:2px; }
+        .att-help { margin:8px 0 4px; padding:10px 14px; border-radius:10px; background:#f1f5f9; color:#334155; font-size:0.82rem; }
+        @media (max-width:480px) { .att-tiles { gap:8px; } .att-tile { padding:10px; } .att-tile-value { font-size:1.4rem; } }
+
+        /* QR tab */
+        .qr-actions { margin-top:18px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap; }
+        .qr-actions .btn-save, .qr-actions .btn-quiet { min-height:48px; padding:12px 20px; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+        .qr-tip { color:#64748b; font-size:0.84rem; margin:14px auto 0; max-width:360px; }
+        .qr-fs { position:fixed; inset:0; z-index:3000; background:#fff; display:none; flex-direction:column; align-items:center; justify-content:center; padding:12px; }
+        .qr-fs.active { display:flex; }
+        .qr-fs img { max-width:100%; max-height:84vh; object-fit:contain; }
+        .qr-fs-note { color:#475569; font-size:0.9rem; font-weight:600; margin-top:8px; }
+        .qr-fs-close { position:absolute; top:12px; right:12px; background:#0f172a; color:#fff; border:0; border-radius:10px; padding:12px 18px; font-weight:700; min-height:48px; cursor:pointer; }
+
+        /* Shared small components (same look as the admin side) */
+        .btn-quiet { background:#fff; border:1px solid #cbd5e1; color:#334155; border-radius:8px; padding:8px 12px; font-weight:600; font-size:0.85rem; cursor:pointer; }
+        .btn-quiet:hover { background:#f1f5f9; }
+        .fold { margin-bottom:16px; }
+        .fold-summary { cursor:pointer; list-style:none; display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:16px; font-weight:800; color:#0f172a; min-height:52px; }
+        .fold-summary::-webkit-details-marker { display:none; }
+        .fold-summary::after { content:"\25BE"; margin-left:auto; color:#64748b; }
+        .fold[open] > .fold-summary { border-bottom-left-radius:0; border-bottom-right-radius:0; }
+        .fold[open] > .fold-summary::after { content:"\25B4"; }
+        .fold > .settings-card { border-top-left-radius:0; border-top-right-radius:0; margin-top:0; }
+        .fold--danger > .fold-summary { color:#b91c1c; background:#fef2f2; border-color:#fca5a5; }
+        .menu-link:focus-visible, button:focus-visible, summary:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline:3px solid #2563eb; outline-offset:2px; }
+        .bottom-nav { display:none; }
+        .signout-mobile { display:none; }
+        @media (max-width: 860px) {
+            /* The bottom bar already has every page, so the slide-out menu and its button are not needed on phones. */
+            .mobile-menu-toggle, .sidebar, .sidebar-backdrop { display:none !important; }
+            .content-body { padding-top:16px !important; }
+            .signout-mobile { display:inline-flex; align-items:center; gap:6px; margin-top:10px; }
+            .bottom-nav { display:flex; position:fixed; left:0; right:0; bottom:0; z-index:90; background:#0f172a; border-top:1px solid #1e293b; padding-bottom:env(safe-area-inset-bottom); }
+            .bottom-nav button { flex:1; background:none; border:0; color:#94a3b8; padding:10px 2px 8px; font-size:0.72rem; font-weight:700; min-height:58px; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; }
+            .bottom-nav button i { font-size:1.2rem; }
+            .bottom-nav button.active { color:#10b981; }
+            .main-content { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+        }
+
+        /* Banner shown while an event's scans are queued/uploading and not
+           final yet, so students don't see (and panic over) a false Absent. */
+        .att-locked-banner {
+            display: flex; align-items: center; gap: 10px;
+            background: #fffbeb; border: 1px solid #fde68a; color: #92400e;
+            border-radius: 10px; padding: 12px 16px; margin-bottom: 16px;
+            font-size: 0.82rem; font-weight: 600;
+        }
+        .att-locked-banner i { font-size: 1rem; flex-shrink: 0; }
+        /* Delete modal styles */
+        .modal-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:2000; }
+        .modal-backdrop.active { display:flex; }
+        .modal { background:#fff; padding:20px; border-radius:12px; width:100%; max-width:420px; box-shadow:0 10px 30px rgba(2,6,23,0.2); }
+        .modal h3 { margin:0 0 8px 0; font-size:1.05rem; }
+        .modal p { margin:0 0 12px 0; color:#64748b; font-size:0.92rem; }
+        .input-password { width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:12px; }
+        .btn-danger { background:#ef4444; color:#fff; border:none; padding:10px 12px; border-radius:8px; cursor:pointer; }
+        .btn-danger:disabled { opacity:0.6; cursor:not-allowed; }
+        .btn-ghost { background:transparent; border:1px solid #e2e8f0; padding:8px 12px; border-radius:8px; cursor:pointer; }
+    </style>
+</head>
+<body>
+
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleSidebar()" aria-label="Toggle menu">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <div class="dashboard-container">
+        <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+
+        <nav class="bottom-nav" aria-label="Quick navigation">
+            <button type="button" data-panel="dashboard-view" class="active" onclick="goPanel('dashboard-view')"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i>Attendance</button>
+            <button type="button" data-panel="qr-view" onclick="goPanel('qr-view')"><i class="fa-solid fa-qrcode" aria-hidden="true"></i>My QR</button>
+            <button type="button" data-panel="settings-view" onclick="goPanel('settings-view')"><i class="fa-solid fa-sliders" aria-hidden="true"></i>Settings</button>
+        </nav>
+
+        <!-- 1. LEFT SIDE NAVIGATION BAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <img src="../assets/cusg_logo.jpg" alt="CUSG Logo" class="brand-logo">
+                <span class="brand-name">CUSG ALIJIS</span>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li>
+                    <a class="menu-link active" onclick="switchPanel('dashboard-view', this)">
+                        <i class="fa-solid fa-chart-pie"></i> My Attendance
+                    </a>
+                </li>
+                <li>
+                    <a class="menu-link" onclick="switchPanel('qr-view', this)">
+                        <i class="fa-solid fa-qrcode"></i> My QR ID
+                    </a>
+                </li>
+                <li>
+                    <a class="menu-link" onclick="switchPanel('settings-view', this)">
+                        <i class="fa-solid fa-sliders"></i> Settings
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <button class="btn-logout" onclick="handleLogoutRoute()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <!-- 2. RIGHT SIDE MAIN CONTENT FEED AREA -->
+        <main class="main-content">
+            <div class="content-body">
+                
+                <!-- PRIMARY SUB-PANEL: OVERVIEW HUB -->
+                <section id="dashboard-view" class="content-panel active-panel">
+                    
+                    <!-- Clean Template Welcome Header (Bound Dynamically upon student registration) -->
+                    <div class="student-profile-header">
+                        <div class="header-avatar-container">
+                            <!-- Generic icon displays if src is empty -->
+                            <i class="fa-solid fa-user" id="headerAvatarIcon"></i>
+                            <img src="" alt="Student Profile Preview" class="header-avatar profile-preview-target" id="headerAvatarImg">
+                        </div>
+                        <div class="header-info-block">
+                            <h2 id="welcomeStudentName">Welcome, Student!</h2>
+                            <div class="header-meta-tag" id="welcomeStudentMeta">
+                                <i class="fa-solid fa-graduation-cap"></i> No Program/Year Assigned
+                            </div>
+                            <button type="button" class="btn-quiet signout-mobile" onclick="handleLogoutRoute()"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Sign out</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Attendance Overview Card -->
+                    <div style="background: white; border: 1px solid #e2e8f0; padding: 24px; border-radius: 12px;">
+                        <div class="att-head">
+                            <div>
+                                <h3>My Attendance</h3>
+                                <div class="att-updated" id="attLastUpdated" role="status" aria-live="polite">Loading…</div>
+                            </div>
+                            <button type="button" class="att-refresh" id="attRefreshBtn" onclick="refreshAttendanceNow()"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Refresh</button>
+                        </div>
+                        <div class="att-msg" id="attMsg" role="alert"></div>
+                        <div id="attendanceGrid"></div>
+                    </div>
+                </section>
+
+                <section id="qr-view" class="content-panel">
+                    <h1 class="panel-title">My QR ID</h1>
+                    <p class="panel-subtitle">Show this to the officer when you are scanned.</p>
+                    <div id="qrDisplayArea" style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:24px;">
+                        <div id="qrEmptyState" class="attendance-empty" style="padding:32px;">
+                            <i class="fa-solid fa-qrcode" style="font-size:2rem;color:#cbd5e1;margin-bottom:12px;"></i>
+                            <p style="color:#64748b;">You don't have a QR ID yet. Tap the button and it will be made from your registration details.</p>
+                            <button id="openCusgEmptyButton" class="btn-save" style="background:#2563eb; margin-top:16px;">Generate my QR ID</button>
+                        </div>
+                        <div id="qrContent" style="display:none; text-align:center;">
+                            <img id="qrPreviewImage" src="" alt="Your QR ID card" style="max-width:340px; width:100%; border-radius:18px; border:1px solid #e2e8f0;" onerror="document.getElementById('qrImageError').style.display='block'" onload="document.getElementById('qrImageError').style.display='none'" />
+                            <div id="qrImageError" class="att-msg" role="alert">We could not load your QR picture. Check your connection and reload the page. If it keeps happening, tap "Regenerate QR" to make it again.</div>
+                            <p class="qr-tip"><i class="fa-solid fa-sun" aria-hidden="true"></i> Turn your screen brightness up and hold the phone steady for the officer.</p>
+                            <p class="qr-tip"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Your QR ID updates automatically when you change your information. If it ever looks out of date, tap <strong>Regenerate QR</strong>.</p>
+                            <div id="qrStatus" class="att-msg" role="status" style="display:none;"></div>
+                            <div class="qr-actions">
+                                <button type="button" id="showQrFullscreenBtn" class="btn-save" onclick="openQrFullscreen()"><i class="fa-solid fa-expand" aria-hidden="true"></i> Show to Officer</button>
+                                <a id="downloadQrLink" class="btn-quiet" href="#" download="CUSG_QR_ID.png"><i class="fa-solid fa-download" aria-hidden="true"></i> Download</a>
+                                <button type="button" id="editQrButton" class="btn-quiet"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Regenerate QR</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECONDARY SUB-PANEL: ACCOUNT REGISTRATION MANAGEMENT -->
+                <section id="settings-view" class="content-panel">
+                    <h1 class="panel-title">Account Settings</h1>
+                    <p class="panel-subtitle">Modify and adjust your registration credentials saved inside your attendance profile records.</p>
+                    
+                    <div class="settings-container-grid">
+                        
+                        <!-- Profile Card Module -->
+                        <details class="fold" open>
+                            <summary class="fold-summary"><span><i class="fa-solid fa-user-gear"></i> Registration Information</span></summary>
+                        <div class="settings-card">
+                            <p class="qr-tip" style="margin-top:0;"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Your QR ID updates automatically when you save changes. If it ever looks out of date, open My QR ID and tap Regenerate QR.</p>
+                            
+                            <!-- Empty Profile Picture Reupload Block Area -->
+                            <div class="avatar-upload-wrapper">
+                                <div class="settings-preview-container">
+                                    <i class="fa-solid fa-user" id="settingsAvatarIcon"></i>
+                                    <img src="" alt="Avatar Upload Preview" class="settings-preview-img profile-preview-target" id="settingsAvatarImg">
+                                </div>
+                                <div class="upload-action-box">
+                                    <label class="form-label">Profile Display Image</label>
+                                    <button type="button" class="btn-upload-trigger" onclick="triggerProfileUploadFile()">
+                                        <i class="fa-solid fa-camera"></i> Upload New Picture
+                                    </button>
+                                    <input type="file" id="profileImageFileInput" class="file-input-hidden" accept="image/*" onchange="previewProfileImage(this)">
+                                </div>
+                            </div>
+
+                            <form class="form-grid" id="editProfileForm" onsubmit="handleUpdateProfile(event)">
+                                <div class="form-group">
+                                    <label class="form-label">Student ID Number</label>
+                                    <input type="text" id="editStudentId" placeholder="Enter Student ID" required class="form-input" value="">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Last Name</label>
+                                    <input type="text" id="editLastName" placeholder="e.g., LIBUNA" required class="form-input" value="">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" id="editFirstName" placeholder="e.g., LANCE" required class="form-input" value="">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Middle Name</label>
+                                    <input type="text" id="editMiddleName" placeholder="e.g., EDUARD ESPOLONG (leave blank if none)" class="form-input" value="">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Course / Program</label>
+                                    <select id="editCourseProgram" class="form-select" required>
+                                        <option value="" disabled selected>Select Program</option>
+                                        <optgroup label="College of Computer Studies (CCS)">
+                                            <option value="BSIT">BS in Information Technology</option>
+                                            <option value="BSIS">BS in Information Systems</option>
+                                        </optgroup>
+                                        <optgroup label="College of Engineering (COE)">
+                                            <option value="BS CPE">BS in Computer Engineering</option>
+                                            <option value="BS ECE">BS in Electronics Engineering</option>
+                                        </optgroup>
+                                        <optgroup label="College of Industrial Technology (CIT)">
+                                            <option value="BIT Architectural Drafting Technology">Architectural Drafting Tech</option>
+                                            <option value="BIT Culinary Technology">Culinary Technology</option>
+                                            <option value="BIT Computer Technology">Computer Technology</option>
+                                            <option value="BIT Electronic Technology">Electronic Technology</option>
+                                            <option value="BIT Electrical Technology">Electrical Technology</option>
+                                            <option value="BIT Automotive Technology">Automotive Technology</option>
+                                            <option value="BIT Mechanical Technology">Mechanical Technology</option>
+                                        </optgroup>
+                                        <optgroup label="College of Education (COED)">
+                                            <option value="BTVTED Major in Electrical">BTVTEd Major in Electrical</option>
+                                            <option value="BTVTED Major in Electronics">BTVTEd Major in Electronics</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Year Level</label>
+                                    <select id="editYearLevel" class="form-select" required>
+                                        <option value="" disabled selected>Select Year Level</option>
+                                        <option value="1st Year">1st Year</option>
+                                        <option value="2nd Year">2nd Year</option>
+                                        <option value="3rd Year">3rd Year</option>
+                                        <option value="4th Year">4th Year</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Section</label>
+                                    <select id="editSection" class="form-select" required>
+                                        <option value="" disabled selected>Select Section</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label class="form-label">Institutional Email</label>
+                                    <input type="email" id="editEmail" placeholder="username@chmsu.edu.ph" required class="form-input" value="">
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <button type="submit" class="btn-save">
+                                        <i class="fa-solid fa-floppy-disk"></i> Update Profile Info
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        </details>
+
+                        <!-- Change Password Card Module -->
+                        <details class="fold">
+                            <summary class="fold-summary"><span><i class="fa-solid fa-shield-halved"></i> Change Password</span></summary>
+                        <div class="settings-card">
+                            <form class="form-grid" id="changePasswordForm" onsubmit="handleChangePassword(event)">
+                                <div class="form-group full-width">
+                                    <label class="form-label">Current Password</label>
+                                    <input type="password" id="currentPassword" placeholder="••••••••" required class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">New Password</label>
+                                    <input type="password" id="newPassword" placeholder="••••••••" required class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Confirm New Password</label>
+                                    <input type="password" id="confirmPassword" placeholder="••••••••" required class="form-input">
+                                </div>
+                                <div class="form-group full-width">
+                                    <button type="submit" class="btn-save" style="background-color: #0f172a;">
+                                        <i class="fa-solid fa-key"></i> Modify System Password
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        </details>
+
+                        <!-- Delete Account Card Module -->
+                        <details class="fold fold--danger">
+                            <summary class="fold-summary"><span><i class="fa-solid fa-user-minus"></i> Delete Account</span></summary>
+                        <div class="settings-card">
+                            <p style="color:#64748b; font-size:0.9rem; margin-bottom:12px;">Permanently delete your account and all associated attendance records. This action cannot be undone.</p>
+                            <div style="display:flex; gap:12px; align-items:center;">
+                                    <button id="deleteAccountBtn" class="btn-danger" style="background:#ef4444; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-user-minus"></i> Delete My Account</button>
+                                    <div id="deleteStatus" style="color:#64748b; font-size:0.9rem;"></div>
+                            </div>
+                        </div>
+                        </details>
+
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- Portal Footer Element aligning directly to repository design rules -->
+            <footer class="portal-footer">
+                <p>&copy; 2026 Carlos Hilado Memorial State University Student Government (CUSG) – Alijis</p>
+            </footer>
+        </main>
+
+    </div>
+
+    <!-- Student Controller -->
+    <script>
+        // ── UI Panel Switcher (kept inline — no Supabase dependency) ──
+        function switchPanel(panelId, menuLink) {
+            document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active-panel'));
+            document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
+            document.getElementById(panelId).classList.add('active-panel');
+            menuLink.classList.add('active');
+            closeSidebar();
+            document.querySelectorAll('.bottom-nav button[data-panel]').forEach(b => b.classList.toggle('active', b.dataset.panel === panelId));
+        }
+
+        function goPanel(panelId) {
+            const link = document.querySelector(`.menu-link[onclick*="'${panelId}'"]`);
+            if (link) switchPanel(panelId, link);
+        }
+
+        // Sidebar links are <a> without href: make them reachable and usable by keyboard.
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.menu-link').forEach(link => {
+                link.setAttribute('tabindex', '0');
+                link.setAttribute('role', 'button');
+                link.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); link.click(); } });
+            });
+        });
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+            document.getElementById('sidebarBackdrop').classList.toggle('active');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('mobile-open');
+            document.getElementById('sidebarBackdrop').classList.remove('active');
+        }
+
+        function triggerProfileUploadFile() {
+            document.getElementById('profileImageFileInput').click();
+        }
+
+        function previewProfileImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('headerAvatarIcon').style.display  = 'none';
+                    document.getElementById('settingsAvatarIcon').style.display = 'none';
+                    document.querySelectorAll('.profile-preview-target').forEach(img => {
+                        img.src = e.target.result;
+                        img.style.display = 'block';
+                    });
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+    <!-- Delete confirmation modal -->
+    <div id="qrFullscreen" class="qr-fs" role="dialog" aria-modal="true" aria-label="QR ID, full screen" onclick="closeQrFullscreen()">
+        <button type="button" class="qr-fs-close" onclick="closeQrFullscreen()">Close</button>
+        <img id="qrFsImage" src="" alt="Your QR ID card">
+        <div class="qr-fs-note">Tap anywhere to close</div>
+    </div>
+    <div id="deleteModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+            <h3 id="deleteModalTitle">Confirm Account Deletion</h3>
+            <p>Please enter your current password to confirm permanent deletion of your account and all related attendance records.</p>
+            <input type="password" id="deletePasswordInput" class="input-password" placeholder="Current password" />
+            <div style="display:flex; gap:8px; justify-content:flex-end;">
+                <button id="cancelDeleteBtn" class="btn-ghost">Cancel</button>
+                <button id="confirmDeleteBtn" class="btn-danger">Confirm Delete</button>
+            </div>
+            <div id="deleteError" style="color:#ef4444;margin-top:8px;display:none;"></div>
+        </div>
+    </div>
+    <!-- v39: lets the page redraw the saved QR ID card after a profile change (section, name, course...) -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="../assets/js/qr-card.js"></script>
+    <script src="../controllers/Studentcontroller.js?v=20260805a"></script>
+</body>
+</html>

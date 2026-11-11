@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../assets/js/api-guard.js?v=43"></script>
+    <title>Admin Login - CUSG</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="../assets/cusg_logo.jpg" type="image/png">
+    <style>
+        :root { color-scheme: light; }
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.75), rgba(241, 245, 255, 0.75)), url('../assets/bg.jpg') center/cover no-repeat;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            color: #0f172a;
+        }
+        .card {
+            width: min(92vw, 430px);
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+            padding: 28px;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+        .brand img { width: 48px; height: 48px; border-radius: 12px; }
+        .brand h1 { margin: 0; font-size: 1.15rem; }
+        .brand p { margin: 2px 0 0; color: #64748b; font-size: 0.9rem; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+        .form-group label { font-weight: 600; font-size: 0.95rem; }
+        .form-group input {
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 0.95rem;
+        }
+        .form-group input:focus { outline: 2px solid #60a5fa; border-color: transparent; }
+        .btn {
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-weight: 700;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+            margin-top: 6px;
+        }
+        .btn:hover { background: #1d4ed8; }
+        .helper { margin-top: 12px; color: #64748b; font-size: 0.9rem; text-align: center; }
+        .helper a { color: #2563eb; text-decoration: none; }
+        .status { margin-top: 12px; min-height: 18px; color: #dc2626; font-size: 0.92rem; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="brand">
+            <img src="../assets/cusg_logo.jpg" alt="CUSG Logo">
+            <div>
+                <h1>Super Admin Access</h1>
+                <p>Manage student records securely</p>
+            </div>
+        </div>
+
+        <form id="adminLoginForm">
+            <div class="form-group">
+                <label for="adminUsername">Admin Username</label>
+                <input type="text" id="adminUsername" name="username" placeholder="Enter admin username" required>
+            </div>
+            <div class="form-group">
+                <label for="adminPassword">Password</label>
+                <input type="password" id="adminPassword" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn"><i class="fa-solid fa-right-to-bracket"></i> Sign In as Admin</button>
+        </form>
+
+        <div class="status" id="adminLoginStatus"></div>
+        <div class="helper">
+            <a href="index.html"><i class="fa-solid fa-arrow-left"></i> Back to student portal</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('adminLoginForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const status = document.getElementById('adminLoginStatus');
+            const submitBtn = event.currentTarget.querySelector('button');
+            const username = document.getElementById('adminUsername').value.trim();
+            const password = document.getElementById('adminPassword').value;
+
+            status.textContent = '';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...';
+
+            try {
+                const response = await fetch('../api/auth/admin_login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Unable to sign in.');
+                }
+
+                window.location.href = 'admin.html';
+            } catch (error) {
+                status.textContent = error.message || 'Unable to sign in right now.';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In as Admin';
+            }
+        });
+    </script>
+</body>
+</html>

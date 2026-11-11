@@ -1,0 +1,567 @@
+/* Base Reset & Foundations */
+html {
+    overflow-x: hidden;
+}
+
+/* Defensive safety net: form controls, images, and buttons should never be
+   able to force the page wider than the viewport on mobile — shrink-to-fit
+   elements like buttons don't auto-wrap just because their container is
+   narrower unless explicitly capped like this. */
+button, input, select, textarea, img, svg {
+    max-width: 100%;
+}
+button {
+    white-space: normal;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f8fafc;
+    color: #1e293b;
+    display: flex;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Dashboard Wrapper Layout Structure */
+.dashboard-container {
+    display: flex;
+    width: 100%;
+}
+
+/* 1. Left Side Navigation Bar */
+.sidebar {
+    width: 260px;
+    background-color: #0f172a;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 50;
+    border-right: 1px solid #1e293b;
+}
+
+.sidebar-brand {
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #1e293b;
+}
+
+.brand-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.brand-name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #10b981;
+    letter-spacing: 0.05em;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.menu-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.menu-link:hover, .menu-link.active {
+    color: #ffffff;
+    background-color: #1e293b;
+}
+
+.menu-link.active i {
+    color: #10b981;
+}
+
+.sidebar-footer {
+    padding: 20px 16px;
+    border-top: 1px solid #1e293b;
+}
+
+.btn-logout {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    color: #ef4444;
+    background: transparent;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
+}
+
+.btn-logout:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* 2. Right Side Main Content Feed Area */
+.main-content {
+    flex-grow: 1;
+    margin-left: 260px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-width: 0;
+}
+
+.content-body {
+    padding: 40px;
+    flex-grow: 1;
+    min-width: 0;
+    max-width: 100%;
+}
+
+/* Content Panel Switching Views */
+.content-panel {
+    display: none;
+}
+
+.content-panel.active-panel {
+    display: block;
+}
+
+.panel-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.panel-subtitle {
+    font-size: 0.95rem;
+    color: #64748b;
+    margin-bottom: 32px;
+}
+
+/* Interactive Dynamic Header Block (Overview) */
+.student-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 32px;
+    background-color: #ffffff;
+    padding: 20px 24px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.header-avatar-container {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 3px solid #cbd5e1;
+    background-color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.header-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Hidden placeholder icon state when no image source is loaded */
+.header-avatar[src=""], .header-avatar:not([src]) {
+    display: none;
+}
+
+.header-avatar-container i {
+    font-size: 1.75rem;
+    color: #94a3b8;
+}
+
+.header-info-block {
+    min-width: 0;
+}
+
+.header-info-block h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.header-meta-tag {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 500;
+    margin-top: 2px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* Settings Layout Elements */
+.settings-container-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    max-width: 700px;
+}
+
+.settings-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.section-divider-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Profile Picture Reupload Section Styles */
+.avatar-upload-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 24px;
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px dashed #cbd5e1;
+}
+
+.settings-preview-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
+    background-color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.settings-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.settings-preview-img[src=""], .settings-preview-img:not([src]) {
+    display: none;
+}
+
+.settings-preview-container i {
+    font-size: 2rem;
+    color: #94a3b8;
+}
+
+.upload-action-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.file-input-hidden {
+    display: none;
+}
+
+.btn-upload-trigger {
+    background-color: #ffffff;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-upload-trigger:hover {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+/* Settings Registration Form Layout System */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+@media (min-width: 480px) {
+    .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .full-width {
+        grid-column: span 2;
+    }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #475569;
+    margin-bottom: 6px;
+    letter-spacing: 0.03em;
+}
+
+.form-input, .form-select {
+    width: 100%;
+    padding: 10px 14px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #0f172a;
+    transition: all 0.2s;
+}
+
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: #10b981;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.btn-save {
+    background-color: #10b981;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 12px;
+    text-align: center;
+}
+
+.btn-save:hover {
+    background-color: #059669;
+}
+
+/* Footer Element Ruleset */
+.portal-footer {
+    background-color: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    padding: 16px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+/* ============================================================
+   Mobile Hamburger Menu & Responsive Sidebar Drawer
+   ============================================================ */
+.mobile-menu-toggle {
+    display: none;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 100;
+    width: 44px;
+    height: 44px;
+    background: #0f172a;
+    color: #10b981;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.15rem;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 49;
+}
+
+.sidebar-backdrop.active {
+    display: block;
+}
+
+@media (max-width: 860px) {
+    .mobile-menu-toggle {
+        display: flex;
+    }
+
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        width: 260px;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .content-body {
+        padding: 70px 16px 90px;
+    }
+
+    /* Card-based responsive tables: below 860px, tables stop being real
+       grids (no more horizontal scrolling / clipped columns) and become a
+       stack of labeled rows instead. Each <td data-label="..."> renders its
+       label via ::before, taken from the JS-rendered markup above. */
+    .data-table thead {
+        display: none;
+    }
+
+    .data-table,
+    .data-table tbody,
+    .data-table tr,
+    .data-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .data-table {
+        border: none;
+        background: transparent;
+    }
+
+    .data-table tr {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        padding: 4px 14px;
+        overflow: hidden;
+    }
+
+    .data-table td {
+        border-bottom: 1px solid #f1f5f9;
+        padding: 10px 0;
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    .data-table td:last-child {
+        border-bottom: none;
+    }
+
+    .data-table td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #94a3b8;
+        margin-bottom: 4px;
+    }
+
+    /* Rows that are just an empty-state message (colspan placeholder) don't
+       need the card chrome. */
+    .data-table td.empty-state-placeholder {
+        border-bottom: none;
+    }
+    .data-table tr:has(> td.empty-state-placeholder) {
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+
+    .attendance-summary-row {
+        flex-direction: column;
+    }
+
+    .scan-layout-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .settings-card {
+        padding: 16px !important;
+    }
+
+    .panel-title {
+        font-size: 1.4rem;
+    }
+
+    .student-profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-body {
+        padding: 66px 12px 90px;
+    }
+
+    .panel-subtitle {
+        margin-bottom: 20px;
+        font-size: 0.88rem;
+    }
+
+    .att-header-cell,
+    .att-status-chip {
+        flex-basis: 130px;
+        width: 130px;
+    }
+}

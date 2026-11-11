@@ -1,0 +1,151 @@
+/* Extracted custom styles from cusg.html */
+body {
+    background-image: url('https://kvzpwanlfzqriqphfsue.supabase.co/storage/v1/object/public/assets/chmsua.jpg');
+    background-repeat: no-repeat; background-attachment: fixed; background-size: cover; min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+.input-error { border: 2px solid #ef4444 !important; background-color: #fff1f1 !important; }
+body.modal-open { overflow: hidden; }
+
+/* ── CHMSU-style diagonal banner ── */
+.chmsu-banner {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    height: 90px;
+    background: #1a3a8f; /* navy base */
+    border-radius: 12px 12px 0 0;
+}
+.chmsu-banner .band {
+    position: absolute;
+    top: 0;
+    height: 100%;
+}
+/* Navy left */
+.chmsu-banner .band-navy {
+    left: 0;
+    width: 55%;
+    background: #1a3a8f;
+    clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+}
+/* Green middle */
+.chmsu-banner .band-green {
+    left: 38%;
+    width: 38%;
+    background: #16a34a;
+    clip-path: polygon(15% 0, 100% 0, 85% 100%, 0% 100%);
+}
+/* Orange right */
+.chmsu-banner .band-orange {
+    right: 0;
+    width: 30%;
+    background: #f97316;
+    clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
+}
+.chmsu-banner .banner-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 14px;
+    z-index: 10;
+}
+.chmsu-banner .banner-logo {
+    width: 62px;
+    height: 62px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    flex-shrink: 0;
+}
+.chmsu-banner .banner-text {
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+.chmsu-banner .banner-text h2 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+}
+.chmsu-banner .banner-text p {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+/* iOS Download Overlay */
+#iosDownloadOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(6px);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+#iosDownloadOverlay.active { display: flex; }
+#iosScrollArea {
+    max-height: 75vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#iosDownloadOverlay img {
+    width: 100%;
+    max-width: 360px;
+    border-radius: 12px;
+    border: 2px solid #fff;
+}
+#iosDownloadOverlay .ios-tip {
+    margin-top: 16px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: center;
+    max-width: 360px;
+    width: 100%;
+}
+#iosDownloadOverlay .ios-tip strong { color: #86efac; }
+#iosCloseBtn {
+    margin-top: 16px;
+    background: #008102;
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 40px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+/* Page transition utilities */
+#pageRoot {
+    transition: opacity 360ms cubic-bezier(.2,.9,.2,1), transform 360ms cubic-bezier(.2,.9,.2,1);
+    will-change: opacity, transform;
+}
+.page-fade-out {
+    opacity: 0 !important;
+    transform: translateY(12px) scale(0.995);
+}
+.page-fade-in {
+    animation: pageFadeIn 360ms ease-out both;
+}
+@keyframes pageFadeIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.998); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}

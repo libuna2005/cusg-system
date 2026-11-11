@@ -1,0 +1,265 @@
+/* ── Base Reset ── */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+body {
+    background-color: #f8fafc;
+    color: #334155;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── Fullscreen Background Wrapper ── */
+.register-wrapper {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+    background-image: url('../../bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.register-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom,
+        rgba(15, 23, 42, 0.9),
+        rgba(15, 23, 42, 0.8),
+        rgba(15, 23, 42, 0.92));
+    backdrop-filter: blur(2px);
+    z-index: 1;
+}
+
+/* ── Card ── */
+.register-card {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 650px;
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 25px 50px -12px rgba(2, 6, 23, 0.3);
+}
+
+/* ── Card Header ── */
+.card-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.brand-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.brand-logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.brand-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #065f46;
+    letter-spacing: -0.025em;
+    text-align: left;
+    line-height: 1.1;
+}
+
+.brand-subtitle {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+    display: block;
+}
+
+.card-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.025em;
+}
+
+.card-subtitle {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-top: 6px;
+}
+
+/* ── Two-Column Form Grid ── */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+@media (min-width: 600px) {
+    .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .full-width { grid-column: span 2; }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+/* ── Input with icon — aligned ── */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    font-size: 0.875rem;
+    z-index: 1;
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 12px 16px 12px 40px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    color: #0f172a;
+    transition: all 0.2s;
+    appearance: none;
+}
+
+/* Password fields need right padding for the eye toggle */
+input[type="password"],
+input[type="text"]#registerPassword,
+input[type="text"]#confirmPassword {
+    padding-right: 44px;
+}
+
+.form-select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: #059669;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+}
+
+.form-input::placeholder { color: #94a3b8; }
+
+/* ── Password Eye Toggle ── */
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+    padding: 4px;
+    user-select: none;
+    z-index: 1;
+}
+.password-toggle:hover { color: #059669; }
+
+/* ── Terms Checkbox ── */
+.terms-wrapper { margin-top: 4px; }
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.8125rem;
+    color: #475569;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.form-checkbox {
+    accent-color: #059669;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* ── Submit Button ── */
+.btn-submit {
+    width: 100%;
+    margin-top: 12px;
+    background-color: #059669;
+    color: #ffffff;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(6, 95, 70, 0.15);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.btn-submit:hover  { background-color: #047857; box-shadow: 0 10px 15px -3px rgba(6, 95, 70, 0.2); }
+.btn-submit:active { transform: scale(0.98); }
+
+/* ── Card Footer ── */
+.card-footer {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid #f1f5f9;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.login-link {
+    color: #059669;
+    font-weight: 700;
+    text-decoration: none;
+}
+.login-link:hover { text-decoration: underline; }

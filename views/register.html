@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../assets/js/api-guard.js?v=43"></script>
+    <title>Student Registration - CUSG Alijis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/register/register.css?v=20260805a">
+    <link rel="icon" href="../assets/cusg_logo.jpg" type="image/png">
+</head>
+<body>
+
+    <div class="register-wrapper">
+        <div class="register-overlay"></div>
+
+        <main class="register-card">
+            
+            <header class="card-header">
+                <div class="brand-wrapper">
+                    <img src="../assets/cusg_logo.jpg" alt="CUSG Logo" class="brand-logo">
+                    <div class="brand-info">
+                        <h1 class="brand-title">CUSG ALIJIS</h1>
+                        <span class="brand-subtitle">Student Attendance Portal</span>
+                    </div>
+                </div>
+                <h2 class="card-title">Create Account</h2>
+                <p class="card-subtitle">Register your student details to set up your portal dashboard.</p>
+            </header>
+
+            <form class="form-grid" id="studentRegisterForm">
+                
+                <div class="form-group">
+                    <label class="form-label" for="studentId">Student ID Number</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fa-solid fa-id-card"></i></span>
+                        <input type="text" id="studentId" placeholder="e.g., abc08070200" required class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="lastName">Last Name</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fa-solid fa-user"></i></span>
+                        <input type="text" id="lastName" placeholder="e.g., LIBUNA" required class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="firstName">First Name</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fa-solid fa-user"></i></span>
+                        <input type="text" id="firstName" placeholder="e.g., LANCE" required class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="middleName">Middle Name</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fa-solid fa-user"></i></span>
+                        <input type="text" id="middleName" placeholder="(leave blank if none)" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="courseProgram">Course / Program</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fa-solid fa-graduation-cap"></i></span>
+                        <select id="courseProgram" required class="form-select">
+                            <option value="" disabled selected>Select your program</option>
+                            <optgroup label="College of Computer Studies (CCS)">
+                                <option value="BSIT">BS in Information Technology</option>
+                                <option value="BSIS">BS in Information Systems</option>
+                            </optgroup>
+                            <optgroup label="College of Engineering (COE)">
+                                <option value="BS CPE">BS in Computer Engineering</option>
+                                <option value="BS ECE">BS in Electronics Engineering</option>
+                            </optgroup>
+                            <optgroup label="College of Industrial Technology (CIT)">
+                                <option value="BIT Architectural Drafting Technology">Architectural Drafting Tech</option>
+                                <option value="BIT Culinary Technology">Culinary Technology</option>
+                                <option value="BIT Computer Technology">Computer Technology</option>
+                                <option value="BIT Electronic Technology">Electronic Technology</option>
+                                <option value="BIT Electrical Technology">Electrical Technology</option>
+                                <option value="BIT Automotive Technology">Automotive Technology</option>
+                                <option value="BIT Mechanical Technology">Mechanical Technology</option>
+                            </optgroup>
+                            <optgroup label="College of Education (COED)">
+                                <option value="BTVTED Major in Electrical">BTVTEd Major in Electrical</option>
+                                <option value="BTVTED Major in Electronics">BTVTEd Major in Electronics</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="yearLevel">Year Level</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fa-solid fa-layer-group"></i></span>
+                        <select id="yearLevel" required class="form-select">
+                            <option value="" disabled selected>Select year level</option>
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                            <option value="3rd Year">3rd Year</option>
+                            <option value="4th Year">4th Year</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="section">Section</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fa-solid fa-users-rectangle"></i></span>
+                        <select id="section" required class="form-select">
+                            <option value="" disabled selected>Select section</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label" for="studentEmail"> Email Address</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fa-solid fa-envelope"></i></span>
+                        <input type="email" id="studentEmail" placeholder="username@gmail.com" required class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label" for="profilePhoto">Profile Picture</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fa-solid fa-camera"></i></span>
+                        <input type="file" id="profilePhoto" accept="image/*" required class="form-input" style="padding-left: 40px;">
+                    </div>
+                    <div id="profilePhotoPreviewWrapper" class="hidden" style="margin-top: 8px; display:flex; align-items:center; gap:10px;">
+                        <img id="profilePhotoPreview" src="" alt="Preview" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:1px solid #cbd5e1;">
+                        <span style="font-size:0.82rem; color:#64748b;">This photo will be used on your QR ID card.</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="registerPassword">Password</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="registerPassword" placeholder="Minimum 8 characters" minlength="8" required class="form-input">
+                        <span class="password-toggle" id="toggleRegPassword">
+                            <i class="fa-solid fa-eye"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">Confirm Password</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="confirmPassword" placeholder="Repeat your password" minlength="8" required class="form-input">
+                        <span class="password-toggle" id="toggleConfirmPassword">
+                            <i class="fa-solid fa-eye"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group full-width terms-wrapper">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="termsCheck" required class="form-checkbox">
+                        <span>I confirm that the info provided above is accurate and I agree to allow the portal to manage my local data records in compliance with data privacy regulations.</span>
+                    </label>
+                </div>
+
+                <div class="form-group full-width">
+                    <button type="submit" id="registerSubmitBtn" class="btn-submit">
+                        <i class="fa-solid fa-user-plus"></i> Complete Registration
+                    </button>
+                </div>
+            </form>
+
+            <footer class="card-footer">
+                Already have a portal account? <a href="index.html" class="login-link">Sign In Instead</a>
+            </footer>
+        </main>
+    </div>
+
+    <script src="../controllers/registerController.js?v=20260805a"></script>
+</body>
+</html>
